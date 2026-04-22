@@ -96,6 +96,64 @@ export default function App() {
     }
   };
 
+  const projects = [
+    {
+      title: "Smart Pocket",
+      date: "Mar 2026 - Present",
+      category: "Mobile App",
+      desc: "A powerful personal finance application built with Flutter & Firebase. Features real-time state management, expense tracking, and complex data visualization. Designed directly for iOS and Android.",
+      tech: ["Flutter", "Dart", "Firebase Firestore", "Auth"],
+      demoUrl: null,
+      githubUrl: null,
+      featured: true,
+      featuredLabel: "★ Highlighted: Flutter + Firebase integration"
+    },
+    {
+      title: "CarGo",
+      date: "Oct 2025 - Feb 2026",
+      category: "Full Stack Web",
+      desc: "A production-deployed car rental management system covering customer reservation flow and admin-side fleet operations, backed by robust SQL Server data modeling.",
+      tech: ["ASP.NET", "C#", "SQL Server", "Web UI"],
+      demoUrl: "http://cargo.runasp.net/",
+      githubUrl: "https://github.com/yixun06/CARGO_WEBSITE",
+      featured: false,
+      featuredLabel: null
+    },
+    {
+      title: "EcoMart",
+      date: "May 2025 - Jun 2025",
+      category: "E-commerce Web",
+      desc: "An eco-focused e-commerce platform with authentication, product browsing, cart operations, and checkout flow using PHP and MySQL.",
+      tech: ["HTML", "CSS", "JavaScript", "PHP", "MySQL"],
+      demoUrl: null,
+      githubUrl: "https://github.com/yixun06/ECOMART_WEBSITE",
+      featured: false,
+      featuredLabel: null
+    },
+    {
+      title: "SportCourtBooking",
+      date: "2025",
+      category: "Web Forms System",
+      desc: "A court reservation platform that streamlines booking workflows, scheduling visibility, and user-facing request management in an ASP.NET Web Forms environment.",
+      tech: ["ASP.NET", "C#", "SQL Server", "Web Forms"],
+      demoUrl: null,
+      githubUrl: "https://github.com/yixun06/SPORTCOURTBOOKING_WEBSITE",
+      featured: false,
+      featuredLabel: null
+    },
+    {
+      title: "TechNewsPortal",
+      date: "2025",
+      category: "Content Platform",
+      desc: "A structured news portal focused on content organization, category navigation, and maintainable ASP.NET page workflows for publishing and browsing updates.",
+      tech: ["ASP.NET", "C#", "SQL Server", "HTML/CSS"],
+      demoUrl: null,
+      githubUrl: "https://github.com/yixun06/TECHNEWSPORTAL_WEBSITE",
+      featured: false,
+      featuredLabel: null
+    }
+  ];
+
   const navItems = ['Home', 'Skills', 'Projects', 'Experience', 'Contact'];
 
   return (
@@ -398,26 +456,7 @@ export default function App() {
             </motion.div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  title: "Smart Pocket",
-                  date: "Mar 2026 - Present",
-                  category: "Mobile App",
-                  desc: "A powerful personal finance application built with Flutter & Firebase. Features real-time state management, expense tracking, and complex data visualization. Designed directly for iOS and Android.",
-                  tech: ["Flutter", "Dart", "Firebase Firestore", "Auth"],
-                  link: null,
-                  featured: true
-                },
-                {
-                  title: "CarGo",
-                  date: "Oct 2025 - Feb 2026",
-                  category: "Full Stack Web",
-                  desc: "A production-deployed car rental management system covering customer reservation flow and admin-side fleet operations, backed by robust SQL Server data modeling.",
-                  tech: ["ASP.NET", "C#", "SQL Server", "Web UI"],
-                  link: "http://cargo.runasp.net/",
-                  featured: false
-                }
-              ].map((project, idx) => (
+              {projects.map((project, idx) => (
                 <motion.div 
                   key={idx}
                   initial="hidden"
@@ -441,7 +480,7 @@ export default function App() {
                   
                   {project.featured && (
                     <div className="mb-4 inline-flex items-center text-xs text-indigo-300 bg-indigo-900/30 px-3 py-1 rounded-lg border border-indigo-800/50">
-                      ★ Highlighted: Flutter + Firebase integration
+                      {project.featuredLabel}
                     </div>
                   )}
 
@@ -459,11 +498,21 @@ export default function App() {
                       ))}
                     </div>
                     
-                    {project.link ? (
-                      <a href={project.link} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-2 text-sm font-bold text-white hover:text-indigo-400 transition-colors group/link pb-1 border-b border-transparent hover:border-indigo-400">
-                        <span>Launch Application</span>
-                        <ExternalLink size={14} className="group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 transition-transform" />
-                      </a>
+                    {project.demoUrl || project.githubUrl ? (
+                      <div className="flex items-center gap-5 flex-wrap">
+                        {project.demoUrl && (
+                          <a href={project.demoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-2 text-sm font-bold text-white hover:text-indigo-400 transition-colors group/link pb-1 border-b border-transparent hover:border-indigo-400">
+                            <span>Launch Application</span>
+                            <ExternalLink size={14} className="group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 transition-transform" />
+                          </a>
+                        )}
+                        {project.githubUrl && (
+                          <a href={project.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-2 text-sm font-bold text-slate-300 hover:text-white transition-colors group/link pb-1 border-b border-transparent hover:border-slate-400">
+                            <Github size={14} className="group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 transition-transform" />
+                            <span>View Source</span>
+                          </a>
+                        )}
+                      </div>
                     ) : (
                       <span className="inline-flex items-center text-sm font-medium text-slate-600 cursor-not-allowed italic">
                         In Development...
@@ -519,11 +568,12 @@ export default function App() {
                 <Award className="text-indigo-500 mr-4" size={28} /> Highlights
               </motion.h2>
               
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {[
                   { title: "Gold Award", event: "Youth Entrepreneurship Challenge (YEC), FIMEx 2025, UMPSA" },
                   { title: "Dean's List", event: "Awarded for 3 consecutive semesters" },
                   { title: "Team Leader", event: "Liaison Team, Chinese Debate Competition (2025)" },
+                  { title: "President", event: "1st Kluang Company Boys' Brigade (2023)" },
                   { title: "Committee Member", event: "Judging Team, UMPSA × HUAWEI AppGallery Mobile App Competition" }
                 ].map((item, i) => (
                   <motion.div 
