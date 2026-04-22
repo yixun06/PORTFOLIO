@@ -14,12 +14,12 @@ export default function CarGoProjectCard({
 
   const techStack = ['ASP.NET', 'C#', 'SQL Server', 'Entity Framework', 'Razor'];
   const screenshots = [
-    '/cargo-screenshots/01-booking-page.png',
-    '/cargo-screenshots/02-home-cars.png',
-    '/cargo-screenshots/03-contact-page.png',
-    '/cargo-screenshots/04-user-profile.png',
-    '/cargo-screenshots/05-admin-order-list.png',
-    '/cargo-screenshots/06-admin-manage-cars.png',
+    'https://raw.githubusercontent.com/yixun06/CARGO_WEBSITE/main/docs/screenshots/booking-page.png',
+    'https://raw.githubusercontent.com/yixun06/CARGO_WEBSITE/main/docs/screenshots/home-cars.png',
+    'https://raw.githubusercontent.com/yixun06/CARGO_WEBSITE/main/docs/screenshots/contact-page.png',
+    'https://raw.githubusercontent.com/yixun06/CARGO_WEBSITE/main/docs/screenshots/user-profile.png',
+    'https://raw.githubusercontent.com/yixun06/CARGO_WEBSITE/main/docs/screenshots/admin-order-list.png',
+    'https://raw.githubusercontent.com/yixun06/CARGO_WEBSITE/main/docs/screenshots/admin-manage-message.png',
   ];
 
   return (

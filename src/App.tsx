@@ -131,7 +131,7 @@ export default function App() {
       featuredLabel: null
     },
     {
-      title: "SportCourtBooking",
+      title: "sportcourtbooking",
       date: "2025",
       category: "Web Forms System",
       desc: "A court reservation platform that streamlines booking workflows, scheduling visibility, and user-facing request management in an ASP.NET Web Forms environment.",
@@ -142,7 +142,7 @@ export default function App() {
       featuredLabel: null
     },
     {
-      title: "TechNewsPortal",
+      title: "technewsportal",
       date: "2025",
       category: "Content Platform",
       desc: "A structured news portal focused on content organization, category navigation, and maintainable ASP.NET page workflows for publishing and browsing updates.",
