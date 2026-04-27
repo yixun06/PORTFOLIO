@@ -22,8 +22,8 @@ import {
   Coffee
 } from 'lucide-react';
 
-// Base URL for GitHub Pages
-const BASE_URL = import.meta.env.BASE_URL || '/PORTFOLIO/';
+// Base URL for GitHub Pages subdirectory deployment
+const BASE_URL = '/PORTFOLIO/';
 
 type MousePosition = { x: number; y: number };
 type ProjectCategory = 'Mobile App' | 'E-commerce Web' | 'Web Forms System' | 'Content Platform' | 'Full Stack Web';
