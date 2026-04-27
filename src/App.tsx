@@ -22,6 +22,9 @@ import {
   Coffee
 } from 'lucide-react';
 
+// Base URL for GitHub Pages
+const BASE_URL = import.meta.env.BASE_URL || '/PORTFOLIO/';
+
 type MousePosition = { x: number; y: number };
 type ProjectCategory = 'Mobile App' | 'E-commerce Web' | 'Web Forms System' | 'Content Platform' | 'Full Stack Web';
 type ProjectItem = {
@@ -527,7 +530,7 @@ export default function App() {
                   whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
                   className="flex justify-center items-center space-x-2 bg-slate-800/80 hover:bg-slate-700/80 text-white px-7 py-3.5 rounded-xl font-bold text-sm border border-slate-700 transition-all"
                   onClick={() => {
-                    const cvUrl = `${import.meta.env.BASE_URL}resume.pdf`;
+                    const cvUrl = `${BASE_URL}resume.pdf`;
                     const link = document.createElement('a');
                     link.href = cvUrl;
                     link.download = 'Khew-Yi-Xun-Resume.pdf';
@@ -580,7 +583,7 @@ export default function App() {
                 <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-transparent z-20 pointer-events-none rounded-3xl" />
 
                 <img
-                  src={`${import.meta.env.BASE_URL}profile.jpg`}
+                  src={`${BASE_URL}profile.jpg`}
                   alt="Khew Yi Xun"
                   loading="eager"
                   decoding="async"
