@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoMart Shop</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="shop.js" defer></script> 
+  <script src="setCurrentPage.js"></script>
+</head>
+<body onload="clearCartWhenNotLogin(); goToPreviousPlace(); hideOrShowLogoutButtonShop(); getUserId(); setCurrentPage('shop')">
+  <header class="header">
+    <div class="logo">
+      <img src="pic/project logo.png" alt="EcoMart Logo" />
+    </div>
+    <nav id="nav-links-container-shop">
+      <ul class="nav-links">
+        <li><a href="main page.html">Home</a></li>
+        <li><a href="shop.html" class="active">Shop</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="register.html">Register</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Cart Icon -->
+  <div id="cart-icon">
+    <img src="pic/cart.png" alt="Cart" />
+    <span id="cart-count" class="cart-badge">0</span>
+  </div>
+
+  <!-- Modal Cart -->
+  <div id="cart-modal">
+    <h3>Your Cart</h3>
+    <div id="cart-modal-items"></div>
+    <p id="cart-modal-total">Total: RM0.00</p>
+    <button onclick="checkout()">Checkout</button>
+    <button id="close-cart-modal">Close</button>
+    
+    <form action="removeCart.php" method="POST" style="display: contents;">
+      <input type="hidden" name="current-page" value="shop">
+      <div class="userId" style="display: contents;"></div>
+      <button type="submit" onclick="clearAll()" id="clear">Clear All</button>
+    </form>
+  </div>
+
+  <!-- Payment Method -->
+  <div id="payment-method">
+    <h3>Payment Method</h3>
+    <div class="payment-method-modal-items" onclick="tick('1')">
+      <img src="pic/visa.png" style="width: 150px;position: absolute;left: 20px;top: 20px;">
+      <span style="position: absolute;left: 190px;font-size: xxx-large;font-weight: lighter;">VISA</span>
+      <input type="checkbox" class="hidden-checkbox" id="payment-method1">
+    </div>
+    <div class="payment-method-modal-items" onclick="tick('2')">
+      <img src="pic/mastercard.png" style="width: 120px;position: absolute;left: 10px;top: 15px;">
+      <span style="position: absolute;left: 190px;font-size: xxx-large;font-weight: lighter;">Mastercard</span>
+      <input type="checkbox" class="hidden-checkbox" id="payment-method2">
+    </div>
+    <div class="payment-method-modal-items" onclick="tick('3')">
+      <img src="pic/paypal.png" style="width: 130px;position: absolute;left: 20px;top: 5px;">
+      <span style="position: absolute;left: 190px;font-size: xxx-large;font-weight: lighter;">Paypal</span>
+      <input type="checkbox" class="hidden-checkbox" id="payment-method3">
+    </div>
+    <div class="payment-method-modal-items" onclick="tick('4')">
+      <img src="pic/amex.png" style="width: 150px;position: absolute;left: 5px;top: 5px;">
+      <span style="position: absolute;left: 190px;font-size: xxx-large;font-weight: lighter;">AMEX</span>
+      <input type="checkbox" class="hidden-checkbox" id="payment-method4">
+    </div>
+
+    <form class="payment-method-form" action="confirmPayment.php" method="POST" style="display: contents;">
+      <div class="userId" style="display: contents;"></div>
+      <button onclick="selectPaymentMethod()">Select</button>
+    </form>
+
+    <button id="close-payment-method-modal" onclick="closePaymentMethod()">Close</button>
+  </div>
+  
+  <section class="shop">
+    <h2>Eco-Friendly Products</h2>
+
+    <div class="filter-bar">
+      <label for="priceFilter">Filter by Price:</label>
+      <select id="priceFilter">
+        <option value="all">All</option>
+        <option value="under10">Under RM10</option>
+        <option value="10to100">RM10 - RM100</option>
+        <option value="above100">Above RM100</option>
+      </select>
+    </div>
+
+    <div class="product-grid" id="productGrid">
+      <!-- Product cards injected by JS -->
+    </div>
+  </section>
+</body>
+</html>
+

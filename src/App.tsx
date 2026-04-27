@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
-import CarGoProjectCard from './components/CarGoProjectCard';
-import { 
-  Github, 
-  Linkedin, 
-  Mail, 
-  MapPin, 
+import {
+  Github,
+  Linkedin,
+  Mail,
+  MapPin,
   ExternalLink,
-  ChevronRight,
   Download,
   Code2,
   Database,
@@ -18,240 +16,452 @@ import {
   ArrowRight,
   Menu,
   X,
-  Layers
+  Layers,
+  Star,
+  Terminal,
+  Coffee
 } from 'lucide-react';
 
+type MousePosition = { x: number; y: number };
+type ProjectCategory = 'Mobile App' | 'E-commerce Web' | 'Web Forms System' | 'Content Platform' | 'Full Stack Web';
+type ProjectItem = {
+  title: string;
+  date: string;
+  category: ProjectCategory;
+  desc: string;
+  tech: string[];
+  demoUrl: string | null;
+  githubUrl: string | null;
+  featured: boolean;
+};
+
+// ─── Floating Cursor Glow ───────────────────────────────────────────────────
+function CursorGlow({ mousePosition }: { mousePosition: MousePosition }) {
+  return (
+    <motion.div
+      className="pointer-events-none fixed z-0 w-96 h-96 rounded-full"
+      style={{
+        background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)',
+        filter: 'blur(40px)',
+      }}
+      animate={{ x: mousePosition.x - 192, y: mousePosition.y - 192 }}
+      transition={{ type: 'spring', stiffness: 80, damping: 25, mass: 0.2 }}
+    />
+  );
+}
+
+// ─── Animated Counter ────────────────────────────────────────────────────────
+function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          let start = 0;
+          const step = target / 40;
+          const timer = setInterval(() => {
+            start += step;
+            if (start >= target) { setCount(target); clearInterval(timer); }
+            else setCount(Math.floor(start));
+          }, 30);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
+
+// ─── Project Card ─────────────────────────────────────────────────────────────
+function ProjectCard({ project, idx, featured }: { project: ProjectItem; idx: number; featured: boolean }) {
+  const [hovered, setHovered] = useState(false);
+
+  const categoryIcons: Record<ProjectCategory, React.ReactNode> = {
+    'Mobile App': <Smartphone size={12} />,
+    'E-commerce Web': <Globe size={12} />,
+    'Web Forms System': <Terminal size={12} />,
+    'Content Platform': <BookOpen size={12} />,
+    'Full Stack Web': <Layers size={12} />,
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: idx * 0.1 }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      className={`group relative flex flex-col bg-slate-900/50 rounded-2xl border overflow-hidden transition-all duration-300
+        ${featured
+          ? 'border-indigo-500/40 shadow-xl shadow-indigo-500/10 lg:col-span-2'
+          : 'border-slate-800 hover:border-slate-600'}`}
+    >
+      {/* Top accent bar */}
+      <motion.div
+        className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 origin-left"
+        animate={{ scaleX: hovered ? 1 : 0 }}
+        transition={{ duration: 0.4 }}
+      />
+
+      {/* Project image placeholder with gradient */}
+      <div className={`relative overflow-hidden ${featured ? 'h-48' : 'h-36'}`}>
+        <div className={`absolute inset-0 ${featured
+          ? 'bg-gradient-to-br from-indigo-900/60 via-slate-900 to-purple-900/40'
+          : 'bg-gradient-to-br from-slate-800 to-slate-900'}`} />
+
+        {/* Decorative code lines */}
+        <div className="absolute inset-0 flex flex-col justify-center px-6 opacity-30 font-mono text-xs text-indigo-300 space-y-1 select-none">
+          {['import Flutter from "dart:flutter";', `const app = new ${project.title.replace(/\s/g, '')}();`, 'await app.build();', '// Production ready ✓'].map((line, i) => (
+            <div key={i} style={{ paddingLeft: `${i * 8}px` }}>{line}</div>
+          ))}
+        </div>
+
+        {/* Category badge */}
+        <div className="absolute top-4 left-4 flex items-center space-x-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-sm border border-slate-700/50 rounded-full">
+          <span className="text-indigo-400">{categoryIcons[project.category] || <Code2 size={12} />}</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">{project.category}</span>
+        </div>
+
+        {/* Date badge */}
+        <div className="absolute top-4 right-4 px-3 py-1.5 bg-black/60 backdrop-blur-sm border border-slate-700/50 rounded-full">
+          <span className="text-[10px] font-mono text-slate-400">{project.date}</span>
+        </div>
+
+        {featured && (
+          <div className="absolute bottom-4 left-4">
+            <span className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-xs text-indigo-300 font-medium">
+              <Star size={10} className="fill-indigo-400 text-indigo-400" />
+              <span>Featured Project</span>
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-col flex-grow p-6">
+        <h4 className={`font-bold text-white mb-2 tracking-tight group-hover:text-indigo-400 transition-colors ${featured ? 'text-2xl' : 'text-xl'}`}>
+          {project.title}
+        </h4>
+        <p className={`text-slate-400 leading-relaxed mb-5 flex-grow ${featured ? 'text-base' : 'text-sm'}`}>
+          {project.desc}
+        </p>
+
+        {/* Tech stack */}
+        <div className="flex flex-wrap gap-1.5 mb-5">
+          {project.tech.map((t: string) => (
+            <span key={t} className="text-[11px] font-mono text-slate-400 border border-slate-700/60 bg-slate-800/50 px-2.5 py-1 rounded-md hover:border-indigo-500/40 hover:text-indigo-300 transition-colors">
+              {t}
+            </span>
+          ))}
+        </div>
+
+        {/* Links */}
+        {project.demoUrl || project.githubUrl ? (
+          <div className="flex items-center gap-4 flex-wrap pt-4 border-t border-slate-800/50">
+            {project.demoUrl && (
+              <a href={project.demoUrl} target="_blank" rel="noreferrer"
+                className="inline-flex items-center space-x-2 text-sm font-bold text-white hover:text-indigo-400 transition-colors group/link">
+                <ExternalLink size={14} className="group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 transition-transform" />
+                <span>Live Demo</span>
+              </a>
+            )}
+            {project.githubUrl && (
+              <a href={project.githubUrl} target="_blank" rel="noreferrer"
+                className="inline-flex items-center space-x-2 text-sm font-semibold text-slate-400 hover:text-white transition-colors group/link">
+                <Github size={14} className="group-hover/link:-translate-y-0.5 transition-transform" />
+                <span>Source Code</span>
+              </a>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center space-x-2 pt-4 border-t border-slate-800/50">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </span>
+            <span className="text-sm text-slate-500 italic">In Development</span>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Main App ────────────────────────────────────────────────────────────────
 export default function App() {
+  const EMAIL_ADDRESS = 'yixunkhew0328@gmail.com';
+  const EMAIL_COMPOSE_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(EMAIL_ADDRESS)}&su=${encodeURIComponent('Portfolio Inquiry')}`;
   const [activeSection, setActiveSection] = useState('home');
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [cardTilt, setCardTilt] = useState({ x: 0, y: 0 });
+  const [profileImageError, setProfileImageError] = useState(false);
 
   const { scrollYProgress } = useScroll();
-  const heroY = useTransform(scrollYProgress, [0, 0.2], [0, 100]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+  const heroY = useTransform(scrollYProgress, [0, 0.2], [0, 80]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
-  // Handle scroll events for nav styling and active section tracking
+  const navItems = ['Home', 'Skills', 'Projects', 'Experience', 'Contact'];
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
-      
       const sections = ['home', 'skills', 'projects', 'experience', 'contact'];
       for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top <= 150 && rect.bottom >= 150) {
+        const el = document.getElementById(section);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 160 && rect.bottom >= 100) {
             setActiveSection(section);
             break;
           }
         }
       }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      setMousePosition({ x: event.clientX, y: event.clientY });
-    };
-
+    const handleMouseMove = (e: MouseEvent) => setMousePosition({ x: e.clientX, y: e.clientY });
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleProfileCardMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    const rotateY = ((x / rect.width) - 0.5) * 12;
-    const rotateX = (0.5 - (y / rect.height)) * 12;
-    setCardTilt({ x: rotateX, y: rotateY });
+  const handleProfileCardMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setCardTilt({
+      x: (0.5 - y / rect.height) * 14,
+      y: (x / rect.width - 0.5) * 14,
+    });
   };
 
-  const resetProfileCardTilt = () => {
-    setCardTilt({ x: 0, y: 0 });
+  const openEmailClient = (e?: React.MouseEvent<HTMLElement>) => {
+    if (e) e.preventDefault();
+    window.open(EMAIL_COMPOSE_URL, '_blank', 'noopener,noreferrer');
   };
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   };
-
-  const staggerContainer = {
+  const stagger = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.15 }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.12 } }
   };
 
-  const projects = [
+  const projects: ProjectItem[] = [
     {
-      title: "Smart Pocket",
-      date: "Mar 2026 - Present",
-      category: "Mobile App",
-      desc: "A powerful personal finance application built with Flutter & Firebase. Features real-time state management, expense tracking, and complex data visualization. Designed directly for iOS and Android.",
-      tech: ["Flutter", "Dart", "Firebase Firestore", "Auth"],
+      title: 'Smart Pocket',
+      date: 'Mar 2026 – Present',
+      category: 'Mobile App',
+      desc: 'A powerful personal finance app built with Flutter & Firebase. Features real-time state management, expense tracking, and rich data visualizations designed for Android.',
+      tech: ['Flutter', 'Dart', 'Firebase Firestore', 'Firebase Auth', 'Provider'],
       demoUrl: null,
       githubUrl: null,
       featured: true,
-      featuredLabel: "★ Highlighted: Flutter + Firebase integration"
     },
     {
-      title: "CarGo",
-      date: "Oct 2025 - Feb 2026",
-      category: "Full Stack Web",
-      desc: "A production-deployed car rental management system covering customer reservation flow and admin-side fleet operations, backed by robust SQL Server data modeling.",
-      tech: ["ASP.NET", "C#", "SQL Server", "Web UI"],
-      demoUrl: "http://cargo.runasp.net/",
-      githubUrl: "https://github.com/yixun06/CARGO_WEBSITE",
+      title: 'CarGo',
+      date: '2025',
+      category: 'Full Stack Web',
+      desc: 'A full-stack car rental platform with booking management, admin dashboard, and live demo deployment on ASP.NET.',
+      tech: ['ASP.NET', 'C#', 'SQL Server', 'HTML/CSS', 'JavaScript'],
+      demoUrl: 'http://cargo.runasp.net/',
+      githubUrl: 'https://github.com/yixun06?tab=repositories',
       featured: false,
-      featuredLabel: null
     },
     {
-      title: "EcoMart",
-      date: "May 2025 - Jun 2025",
-      category: "E-commerce Web",
-      desc: "An eco-focused e-commerce platform with authentication, product browsing, cart operations, and checkout flow using PHP and MySQL.",
-      tech: ["HTML", "CSS", "JavaScript", "PHP", "MySQL"],
+      title: 'EcoMart',
+      date: 'May – Jun 2025',
+      category: 'E-commerce Web',
+      desc: 'An eco-focused e-commerce platform with authentication, product browsing, cart operations, and full checkout flow.',
+      tech: ['HTML', 'CSS', 'JavaScript', 'PHP', 'MySQL'],
       demoUrl: null,
-      githubUrl: "https://github.com/yixun06/ECOMART_WEBSITE",
+      githubUrl: 'https://github.com/yixun06?tab=repositories',
       featured: false,
-      featuredLabel: null
     },
     {
-      title: "sportcourtbooking",
-      date: "2025",
-      category: "Web Forms System",
-      desc: "A court reservation platform that streamlines booking workflows, scheduling visibility, and user-facing request management in an ASP.NET Web Forms environment.",
-      tech: ["ASP.NET", "C#", "SQL Server", "Web Forms"],
+      title: 'Sport Court Booking',
+      date: '2025',
+      category: 'Web Forms System',
+      desc: 'A court reservation platform streamlining booking workflows, scheduling visibility, and user-facing request management.',
+      tech: ['ASP.NET', 'C#', 'SQL Server', 'Web Forms'],
       demoUrl: null,
-      githubUrl: "https://github.com/yixun06/SPORTCOURTBOOKING_WEBSITE",
+      githubUrl: 'https://github.com/yixun06?tab=repositories',
       featured: false,
-      featuredLabel: null
     },
     {
-      title: "technewsportal",
-      date: "2025",
-      category: "Content Platform",
-      desc: "A structured news portal focused on content organization, category navigation, and maintainable ASP.NET page workflows for publishing and browsing updates.",
-      tech: ["ASP.NET", "C#", "SQL Server", "HTML/CSS"],
+      title: 'Tech News Portal',
+      date: '2025',
+      category: 'Content Platform',
+      desc: 'A structured news portal focused on content organization, category navigation, and maintainable ASP.NET page workflows.',
+      tech: ['ASP.NET', 'C#', 'SQL Server', 'HTML/CSS'],
       demoUrl: null,
-      githubUrl: "https://github.com/yixun06/TECHNEWSPORTAL_WEBSITE",
+      githubUrl: 'https://github.com/yixun06?tab=repositories',
       featured: false,
-      featuredLabel: null
-    }
+    },
   ];
 
-  const navItems = ['Home', 'Skills', 'Projects', 'Experience', 'Contact'];
+  const skills = [
+    {
+      title: 'Mobile Development',
+      icon: Smartphone,
+      skills: ['Flutter', 'Dart', 'Firebase Auth & Firestore', 'Cross-Platform UI', 'Provider / Riverpod'],
+      highlight: true,
+      color: 'indigo',
+    },
+    {
+      title: 'Frontend Engineering',
+      icon: Globe,
+      skills: ['HTML5', 'CSS3', 'JavaScript ES6+', 'React.js', 'Tailwind CSS'],
+      highlight: false,
+      color: 'slate',
+    },
+    {
+      title: 'Backend Architecture',
+      icon: Database,
+      skills: ['C# / .NET', 'PHP', 'ASP.NET Web Forms', 'SQL Server', 'MySQL'],
+      highlight: false,
+      color: 'slate',
+    },
+    {
+      title: 'Tools & Workflow',
+      icon: Code2,
+      skills: ['Git & GitHub', 'Figma', 'Responsive Design', 'Agile / Scrum', 'VS Code'],
+      highlight: false,
+      color: 'slate',
+    },
+  ];
+
+  const achievements = [
+    { title: 'Gold Award', event: 'Youth Entrepreneurship Challenge (YEC), FIMEx 2025, UMPSA' },
+    { title: "Dean's List", event: 'Awarded for 3 consecutive semesters' },
+    { title: 'Team Leader', event: 'Liaison Team, Chinese Debate Competition (2025)' },
+    { title: 'President', event: '1st Kluang Company Boys\' Brigade (2023)' },
+    { title: 'Committee Member', event: 'Judging Team, UMPSA × HUAWEI AppGallery Mobile App Competition' },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-slate-200 font-sans selection:bg-indigo-500/30 selection:text-indigo-200 overflow-x-hidden">
+    <div className="min-h-screen bg-[#080810] text-slate-200 font-sans overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
+
+      {/* Scroll progress bar */}
       <motion.div
-        className="pointer-events-none fixed z-0 w-80 h-80 rounded-full bg-indigo-500/15 blur-3xl"
-        animate={{
-          x: mousePosition.x - 160,
-          y: mousePosition.y - 160,
-        }}
-        transition={{ type: 'spring', stiffness: 60, damping: 22, mass: 0.2 }}
+        className="fixed top-0 left-0 right-0 z-[60] h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 origin-left"
+        style={{ scaleX: scrollYProgress }}
       />
-      
-      {/* Interactive Navigation */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-[#0a0a0b]/90 backdrop-blur-md shadow-sm border-b border-slate-800/80 py-4' : 'bg-transparent py-6'}`}>
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center space-x-3 cursor-pointer relative z-50" 
+
+      <CursorGlow mousePosition={mousePosition} />
+
+      {/* ── NAV ─────────────────────────────────────────── */}
+      <nav className={`fixed top-[2px] w-full z-50 transition-all duration-300 ${scrolled
+        ? 'bg-[#080810]/95 backdrop-blur-xl shadow-md shadow-black/30 border-b border-slate-800/80 py-3'
+        : 'bg-transparent py-5'}`}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <motion.div
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+            className="flex items-center space-x-3 cursor-pointer z-50"
             onClick={() => scrollTo('home')}
           >
-            <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/30">KX</div>
-            <span className="text-lg font-semibold tracking-tight text-white hidden sm:block">Khew Yi Xun<span className="text-indigo-500">.</span></span>
+            <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center font-black text-lg text-white shadow-lg shadow-indigo-500/30 select-none">KX</div>
+            <span className="text-base font-bold tracking-tight text-white hidden sm:block">
+              Khew Yi Xun<span className="text-indigo-500">.</span>
+            </span>
           </motion.div>
-          
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-400 uppercase tracking-widest">
-            {navItems.map((item) => {
+
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navItems.map(item => {
               const id = item.toLowerCase();
+              const isActive = activeSection === id;
               return (
-                <button 
-                  key={item} 
+                <button
+                  key={item}
                   onClick={() => scrollTo(id)}
-                  className={`relative pb-1 transition-colors uppercase tracking-widest ${activeSection === id ? 'text-white' : 'hover:text-white'}`}
+                  className={`relative px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-widest transition-all duration-200
+                    ${isActive
+                      ? 'text-white bg-indigo-500/15 border border-indigo-500/30'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/60'}`}
                 >
-                  {activeSection === id && (
-                    <motion.div 
-                      layoutId="nav-pill"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  {item}
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-active"
+                      className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-indigo-400"
                     />
                   )}
-                  {item}
                 </button>
               );
             })}
           </div>
-          
-          <div className="flex items-center space-x-4">
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+
+          <div className="flex items-center space-x-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
               onClick={() => scrollTo('contact')}
-              className="hidden md:flex group items-center space-x-2 bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20"
+              className="hidden md:flex items-center space-x-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20"
             >
               <span>Hire Me</span>
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={14} />
             </motion.button>
-            
-            {/* Mobile Menu Toggle */}
-            <button 
-              className="md:hidden relative z-50 p-2 text-white hover:bg-slate-800 rounded-lg transition-colors"
+
+            <button
+              className="md:hidden z-50 p-2 text-white hover:bg-slate-800 rounded-lg transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Navigation Menu */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-[#0a0a0b]/98 backdrop-blur-2xl px-6 pt-32 flex flex-col md:hidden"
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-[#080810]/98 backdrop-blur-2xl flex flex-col justify-center items-center md:hidden"
           >
-            <div className="flex flex-col space-y-6 text-center">
-              {navItems.map((item) => (
+            <div className="flex flex-col items-center space-y-6">
+              {navItems.map((item, i) => (
                 <motion.button
-                  whileTap={{ scale: 0.95 }}
                   key={item}
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => scrollTo(item.toLowerCase())}
-                  className={`text-2xl font-bold tracking-tight ${activeSection === item.toLowerCase() ? 'text-indigo-400' : 'text-slate-300'}`}
+                  className={`text-3xl font-black tracking-tight transition-colors
+                    ${activeSection === item.toLowerCase() ? 'text-indigo-400' : 'text-slate-300 hover:text-white'}`}
                 >
                   {item}
                 </motion.button>
               ))}
-              <motion.button 
+              <motion.button
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => scrollTo('contact')}
-                className="mt-8 mx-auto flex items-center justify-center space-x-2 bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-indigo-500/20 w-full max-w-xs"
+                className="mt-4 flex items-center space-x-2 bg-indigo-600 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-2xl shadow-indigo-500/30"
               >
-                <span>Hire Me Today</span>
-                <ArrowRight size={18} />
+                <span>Let's Talk</span>
+                <ArrowRight size={20} />
               </motion.button>
             </div>
           </motion.div>
@@ -259,178 +469,208 @@ export default function App() {
       </AnimatePresence>
 
       <main>
-        
-        {/* HERO SECTION */}
+        {/* ── HERO ───────────────────────────────────────── */}
         <section id="home" className="min-h-screen flex items-center pt-20 relative overflow-hidden">
-          <div className="absolute inset-0 z-0 pointer-events-none">
-            <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-900/20 rounded-full mix-blend-screen filter blur-[120px] animate-pulse"></div>
-            <div className="absolute bottom-20 left-10 w-96 h-96 bg-slate-800/30 rounded-full mix-blend-screen filter blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+          {/* Background orbs */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-16 right-0 w-[600px] h-[600px] bg-indigo-900/15 rounded-full blur-[120px]" />
+            <div className="absolute -bottom-20 -left-20 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[100px]" />
           </div>
 
-          <motion.div 
+          {/* Grid overlay */}
+          <div className="absolute inset-0 opacity-[0.03]"
+            style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+
+          <motion.div
             style={{ y: heroY, opacity: heroOpacity }}
-            className="max-w-6xl mx-auto px-6 grid md:grid-cols-12 gap-12 items-center relative z-10 w-full"
+            className="max-w-6xl mx-auto px-4 sm:px-6 grid md:grid-cols-12 gap-8 md:gap-12 items-center relative z-10 w-full py-12 md:py-0"
           >
-            <motion.div 
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer}
-              className="col-span-12 md:col-span-7 flex flex-col justify-center text-center md:text-left mt-10 md:mt-0"
+            {/* Text */}
+            <motion.div
+              initial="hidden" animate="visible" variants={stagger}
+              className="col-span-12 md:col-span-7 text-center md:text-left"
             >
-              <motion.div variants={fadeInUp} className="inline-flex items-center space-x-3 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-xs font-bold uppercase tracking-wider mb-6 mx-auto md:mx-0 w-fit">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+              <motion.div variants={fadeInUp}
+                className="inline-flex items-center space-x-2.5 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-[11px] font-black uppercase tracking-widest mb-6 mx-auto md:mx-0 w-fit"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500" />
                 </span>
-                <span>Seeking Internship (Aug 2026 - Jan 2027)</span>
+                <span>Seeking Internship · 17 Aug 2026 – 29 Jan 2027</span>
               </motion.div>
-              
-              <motion.h1 variants={fadeInUp} className="text-5xl sm:text-6xl md:text-7xl font-bold text-white leading-tight mb-6 mt-4">
-                Full Stack <br className="hidden sm:block" />
-                <span className="text-indigo-500">Developer.</span>
+
+              <motion.h1 variants={fadeInUp}
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.05] tracking-tight mb-6"
+              >
+                Full Stack<br className="hidden sm:block" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500"> Developer.</span>
               </motion.h1>
-              
-              <motion.p variants={fadeInUp} className="text-lg md:text-xl text-slate-400 leading-relaxed max-w-lg mx-auto md:mx-0 mb-8">
-                Hi, I'm <strong className="text-white">Khew Yi Xun</strong>. A Computer Science student at UMPSA. I craft seamless digital experiences across <strong>Web & Mobile</strong> using modern toolkits.
+
+              <motion.p variants={fadeInUp}
+                className="text-base md:text-lg text-slate-400 leading-relaxed max-w-lg mx-auto md:mx-0 mb-8"
+              >
+                Hi, I'm <strong className="text-white font-bold">Khew Yi Xun</strong>. A CS student at UMPSA crafting seamless digital experiences across <strong className="text-indigo-300">Web & Mobile</strong> with modern toolkits.
               </motion.p>
-              
-              <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row flex-wrap justify-center md:justify-start gap-4">
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+
+              <motion.div variants={fadeInUp}
+                className="flex flex-col sm:flex-row flex-wrap justify-center md:justify-start gap-3 mb-10"
+              >
+                <motion.button
+                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
                   onClick={() => scrollTo('projects')}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3.5 rounded-xl font-semibold transition-all shadow-lg shadow-indigo-500/20"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-7 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-500/25"
                 >
                   View My Work
                 </motion.button>
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex justify-center items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-xl font-semibold border border-slate-700 transition-all"
-                  onClick={() => alert('Resume download should be configured with your actual PDF link here.')}
+                <motion.button
+                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                  className="flex justify-center items-center space-x-2 bg-slate-800/80 hover:bg-slate-700/80 text-white px-7 py-3.5 rounded-xl font-bold text-sm border border-slate-700 transition-all"
+                  onClick={() => alert('Configure your resume PDF link here.')}
                 >
-                  <Download size={18} />
-                  <span>Resume</span>
+                  <Download size={16} />
+                  <span>Download CV</span>
                 </motion.button>
               </motion.div>
 
-              <motion.div variants={fadeInUp} className="mt-12 flex justify-center md:justify-start space-x-6 opacity-80">
-                <motion.a whileHover={{ y: -3, color: '#fff' }} href="https://github.com/Khew0328" target="_blank" rel="noreferrer" className="flex items-center space-x-2 text-slate-400 transition-colors">
-                  <Github size={22} />
-                  <span className="text-xs font-mono uppercase tracking-tighter hidden sm:inline">GitHub</span>
-                </motion.a>
-                <motion.a whileHover={{ y: -3, color: '#fff' }} href="https://linkedin.com/in/Khew0328" target="_blank" rel="noreferrer" className="flex items-center space-x-2 text-slate-400 transition-colors">
-                  <Linkedin size={22} />
-                  <span className="text-xs font-mono uppercase tracking-tighter hidden sm:inline">LinkedIn</span>
-                </motion.a>
-                <motion.a whileHover={{ y: -3, color: '#fff' }} href="mailto:yixunkhew0328@gmail.com" className="flex items-center space-x-2 text-slate-400 transition-colors">
-                  <Mail size={22} />
-                  <span className="text-xs font-mono uppercase tracking-tighter hidden sm:inline">Email</span>
-                </motion.a>
+              {/* Socials */}
+              <motion.div variants={fadeInUp} className="flex justify-center md:justify-start space-x-5">
+                {[
+                  { href: 'https://github.com/yixun06?tab=repositories', icon: Github, label: 'GitHub' },
+                  { href: 'https://linkedin.com/in/Khew0328', icon: Linkedin, label: 'LinkedIn' },
+                  { href: EMAIL_COMPOSE_URL, icon: Mail, label: 'Email' },
+                ].map(({ href, icon: Icon, label }) => (
+                  <motion.a
+                    key={label}
+                    whileHover={{ y: -3 }}
+                    href={href}
+                    target={href.startsWith('mailto') ? undefined : '_blank'}
+                    rel="noreferrer"
+                    className="flex items-center space-x-2 text-slate-500 hover:text-white transition-colors group"
+                  >
+                    <Icon size={20} className="group-hover:text-indigo-400 transition-colors" />
+                    <span className="text-xs font-mono uppercase tracking-wider hidden sm:inline">{label}</span>
+                  </motion.a>
+                ))}
               </motion.div>
             </motion.div>
 
-            {/* Profile Picture Area */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, rotate: -5 }}
+            {/* Profile Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, rotate: -4 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 1, type: "spring", stiffness: 100 }}
-              className="col-span-12 md:col-span-5 flex justify-center mt-12 md:mt-0 relative"
+              transition={{ duration: 0.9, type: 'spring', stiffness: 90 }}
+              className="col-span-12 md:col-span-5 flex justify-center"
             >
               <motion.div
-                whileHover={{ scale: 1.02 }}
                 onMouseMove={handleProfileCardMove}
-                onMouseLeave={resetProfileCardTilt}
-                style={{
-                  transform: `perspective(1200px) rotateX(${cardTilt.x}deg) rotateY(${cardTilt.y}deg)`,
-                }}
-                className="relative w-full max-w-sm aspect-[4/5] rounded-3xl bg-slate-900 border border-slate-700/50 p-2 shadow-2xl shadow-indigo-500/20 group overflow-hidden transition-transform duration-150"
+                onMouseLeave={() => setCardTilt({ x: 0, y: 0 })}
+                style={{ transform: `perspective(1200px) rotateX(${cardTilt.x}deg) rotateY(${cardTilt.y}deg)` }}
+                className="relative w-full max-w-xs sm:max-w-sm aspect-[4/5] rounded-3xl overflow-hidden cursor-pointer transition-transform duration-150 group will-change-transform"
               >
-                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-transparent z-10 pointer-events-none rounded-3xl"></div>
-                <img 
-                  src="/profile.jpg" 
-                  alt="Khew Yi Xun" 
-                  className="w-full h-full object-cover rounded-2xl transition-all duration-700 transform group-hover:scale-105"
+                {/* Card frame */}
+                <div className="absolute inset-0 rounded-3xl border border-indigo-500/20 shadow-[0_0_36px_rgba(99,102,241,0.18)] pointer-events-none z-30" />
+
+                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-transparent z-20 pointer-events-none rounded-3xl" />
+
+                <img
+                  src="/profile.jpg"
+                  alt="Khew Yi Xun"
+                  loading="eager"
+                  decoding="async"
+                  draggable={false}
+                  className={`absolute inset-0 z-10 w-full h-full object-cover rounded-3xl transition-transform duration-700 group-hover:scale-105 ${profileImageError ? 'hidden' : 'block'}`}
+                  onLoad={() => setProfileImageError(false)}
+                  onError={() => setProfileImageError(true)}
                 />
-                
-                {/* Floating Badge */}
-                <motion.div 
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                  className="absolute bottom-6 -left-4 md:-left-8 bg-[#0a0a0b]/80 backdrop-blur-md border border-slate-700 p-4 rounded-2xl flex items-center shadow-xl z-20"
+
+                {/* Fallback if image not found */}
+                <div
+                  className={`fallback-avatar absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-900/80 to-slate-900 items-center justify-center z-10 ${profileImageError ? 'flex' : 'hidden'}`}
+                  aria-hidden={!profileImageError}
                 >
-                  <div className="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center mr-3">
-                    <Layers className="text-indigo-400" size={20} />
+                  <div className="text-center">
+                    <div className="w-28 h-28 rounded-full bg-indigo-600/30 border-2 border-indigo-500/40 flex items-center justify-center mx-auto mb-4">
+                      <span className="text-5xl font-black text-indigo-300">KX</span>
+                    </div>
+                    <p className="text-slate-400 text-sm">Profile Photo</p>
                   </div>
-                  <div>
-                    <div className="text-xs text-slate-400 font-mono">Tech Stack</div>
-                    <div className="text-sm font-bold text-white">Flutter + Firebase</div>
-                  </div>
-                </motion.div>
+                </div>
               </motion.div>
             </motion.div>
           </motion.div>
+
+          {/* Scroll indicator */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-2"
+          >
+            <div className="w-[1px] h-12 bg-gradient-to-b from-transparent to-slate-700" />
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-600">Scroll</span>
+          </motion.div>
         </section>
 
-        {/* SKILLS SECTION */}
-        <section id="skills" className="py-24 relative">
-          <div className="max-w-6xl mx-auto px-6">
-            <motion.div 
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
-              className="mb-16 border-b border-slate-800/50 pb-8 flex flex-col items-center md:items-start text-center md:text-left"
+        {/* ── STATS BAR ─────────────────────────────────── */}
+        <section className="py-10 border-y border-slate-800/50 bg-slate-900/20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+              {[
+                { value: 5, suffix: '+', label: 'Projects Built' },
+                { value: 381, suffix: '/400', label: 'CGPA Score', display: '3.81' },
+                { value: 3, suffix: '×', label: "Dean's List" },
+                { value: 1, suffix: ' Gold', label: 'FIMEx Award' },
+              ].map(({ value, suffix, label, display }, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-2xl sm:text-3xl font-black text-white mb-1">
+                    {display ? display : <AnimatedCounter target={value} suffix={suffix} />}
+                  </div>
+                  <div className="text-xs text-slate-500 uppercase tracking-widest font-semibold">{label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── SKILLS ────────────────────────────────────── */}
+        <section id="skills" className="py-20 md:py-28 relative">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <motion.div
+              initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}
+              variants={stagger}
+              className="mb-14 text-center md:text-left"
             >
-              <motion.h2 variants={fadeInUp} className="text-sm font-bold uppercase tracking-widest text-indigo-500 mb-2">Technical Arsenal</motion.h2>
-              <motion.h3 variants={fadeInUp} className="text-3xl md:text-5xl font-bold text-white tracking-tight">Built for web & mobile.</motion.h3>
+              <motion.p variants={fadeInUp} className="text-xs font-black uppercase tracking-[0.3em] text-indigo-500 mb-3">Technical Arsenal</motion.p>
+              <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Built for web <span className="text-slate-500">&</span> mobile.</motion.h2>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[
-                { 
-                  title: "Mobile App Development", 
-                  icon: Smartphone, 
-                  skills: ["Flutter", "Dart", "Firebase Auth / Firestore", "Cross-Platform UI"],
-                  highlight: true
-                },
-                { 
-                  title: "Frontend Engineering", 
-                  icon: Globe, 
-                  skills: ["HTML5", "CSS3", "JavaScript (ES6+)", "React.js", "Tailwind CSS"],
-                  highlight: false
-                },
-                { 
-                  title: "Backend Architecture", 
-                  icon: Database, 
-                  skills: ["C# .NET", "PHP", "ASP.NET", "SQL Server", "MySQL"],
-                  highlight: false
-                },
-                { 
-                  title: "Tools & Methodologies", 
-                  icon: Code2, 
-                  skills: ["Git / GitHub", "Figma Design", "Responsive Web Design", "Agile integration"],
-                  highlight: false
-                }
-              ].map((category, idx) => (
-                <motion.div 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+              {skills.map((cat, idx) => (
+                <motion.div
                   key={idx}
-                  initial="hidden"
-                  whileInView="visible"
-                  whileHover={{ y: -5 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -4 }}
                   viewport={{ once: true }}
-                  variants={fadeInUp}
-                  className={`p-8 rounded-3xl ${category.highlight ? 'bg-indigo-900/10 border-indigo-500/30 shadow-lg shadow-indigo-500/5' : 'bg-slate-900/40 border-slate-800'} border hover:border-slate-600 transition-all duration-300 group`}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  className={`p-6 md:p-8 rounded-2xl border transition-all duration-300 group
+                    ${cat.highlight
+                      ? 'bg-indigo-950/30 border-indigo-500/30 shadow-lg shadow-indigo-500/5'
+                      : 'bg-slate-900/40 border-slate-800 hover:border-slate-600'}`}
                 >
-                  <h3 className="text-white text-lg font-semibold mb-6 flex items-center">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-4 ${category.highlight ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-indigo-400'} group-hover:scale-110 transition-transform`}>
-                      <category.icon size={20} />
+                  <h3 className="text-white text-base font-bold mb-5 flex items-center">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-3 transition-transform group-hover:scale-110
+                      ${cat.highlight ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-indigo-400'}`}>
+                      <cat.icon size={18} />
                     </div>
-                    {category.title}
+                    {cat.title}
                   </h3>
-                  <div className="flex flex-wrap gap-2.5">
-                    {category.skills.map(skill => (
-                      <span key={skill} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${category.highlight ? 'bg-blue-500/10 border-blue-500/20 text-blue-200 group-hover:border-blue-400/50' : 'bg-slate-800 border-slate-700 text-slate-300 group-hover:border-slate-500'}`}>
+                  <div className="flex flex-wrap gap-2">
+                    {cat.skills.map(skill => (
+                      <span key={skill}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors
+                          ${cat.highlight
+                            ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-300 hover:border-indigo-400/50'
+                            : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white'}`}>
                         {skill}
                       </span>
                     ))}
@@ -441,214 +681,185 @@ export default function App() {
           </div>
         </section>
 
-        {/* PROJECTS SECTION */}
-        <section id="projects" className="py-24">
-          <div className="max-w-6xl mx-auto px-6">
-            <motion.div 
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={staggerContainer}
-              className="mb-16 border-b border-slate-800/50 pb-8 text-center md:text-left"
+        {/* ── PROJECTS ──────────────────────────────────── */}
+        <section id="projects" className="py-20 md:py-28 border-t border-slate-800/30">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <motion.div
+              initial="hidden" whileInView="visible" viewport={{ once: true }}
+              variants={stagger}
+              className="mb-14 text-center md:text-left"
             >
-              <motion.h2 variants={fadeInUp} className="text-sm font-bold uppercase tracking-widest text-indigo-500 mb-2">Portfolio</motion.h2>
-              <motion.h3 variants={fadeInUp} className="text-3xl md:text-5xl font-bold text-white tracking-tight">Featured Projects.</motion.h3>
+              <motion.p variants={fadeInUp} className="text-xs font-black uppercase tracking-[0.3em] text-indigo-500 mb-3">Portfolio</motion.p>
+              <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Featured Projects.</motion.h2>
             </motion.div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               {projects.map((project, idx) => (
-                <motion.div 
-                  key={idx}
-                  initial="hidden"
-                  whileInView="visible"
-                  whileHover={{ y: -8 }}
-                  viewport={{ once: true }}
-                  variants={fadeInUp}
-                  className={`group relative bg-slate-900/40 p-8 rounded-3xl border ${project.featured ? 'border-indigo-500/40 shadow-xl shadow-indigo-500/10' : 'border-slate-800'} hover:bg-slate-900/80 transition-all duration-300 flex flex-col h-full overflow-hidden ${project.featured ? 'lg:col-span-2' : ''}`}
-                >
-                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"></div>
-                  
-                  <div className="flex justify-between items-start mb-6">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-full flex items-center">
-                      {project.featured && <Smartphone size={12} className="mr-1.5" />}
-                      {project.category}
-                    </span>
-                    <span className="text-xs font-mono text-slate-500 uppercase">
-                      {project.date}
-                    </span>
-                  </div>
-                  
-                  {project.featured && (
-                    <div className="mb-4 inline-flex items-center text-xs text-indigo-300 bg-indigo-900/30 px-3 py-1 rounded-lg border border-indigo-800/50">
-                      {project.featuredLabel}
-                    </div>
-                  )}
-
-                  <h4 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-indigo-400 transition-colors">{project.title}</h4>
-                  <p className={`${project.featured ? 'text-slate-300 text-base' : 'text-slate-400 text-sm'} leading-relaxed mb-8 flex-grow`}>
-                    {project.desc}
-                  </p>
-                  
-                  <div>
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {project.tech.map(t => (
-                        <span key={t} className="text-[11px] font-mono text-slate-400 border border-slate-700/50 bg-slate-800/30 px-2.5 py-1 rounded-md">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    {project.demoUrl || project.githubUrl ? (
-                      <div className="flex items-center gap-5 flex-wrap">
-                        {project.demoUrl && (
-                          <a href={project.demoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-2 text-sm font-bold text-white hover:text-indigo-400 transition-colors group/link pb-1 border-b border-transparent hover:border-indigo-400">
-                            <span>Launch Application</span>
-                            <ExternalLink size={14} className="group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 transition-transform" />
-                          </a>
-                        )}
-                        {project.githubUrl && (
-                          <a href={project.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-2 text-sm font-bold text-slate-300 hover:text-white transition-colors group/link pb-1 border-b border-transparent hover:border-slate-400">
-                            <Github size={14} className="group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 transition-transform" />
-                            <span>View Source</span>
-                          </a>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="inline-flex items-center text-sm font-medium text-slate-600 cursor-not-allowed italic">
-                        In Development...
-                      </span>
-                    )}
-                  </div>
-                </motion.div>
+                <ProjectCard key={idx} project={project} idx={idx} featured={project.featured} />
               ))}
-            </div>
-
-            <div className="mt-6">
-              <CarGoProjectCard
-                githubUrl="https://github.com/yixun06/CARGO_WEBSITE"
-                liveDemoUrl="http://cargo.runasp.net/"
-              />
             </div>
           </div>
         </section>
 
-        {/* EXPERIENCE & EDUCATION SECTION */}
-        <section id="experience" className="py-24 relative border-t border-slate-800/50 bg-slate-900/20">
-          <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16">
-            
-            {/* Education Track */}
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-              <motion.h2 variants={fadeInUp} className="text-3xl font-bold text-white tracking-tight mb-10 flex items-center border-b border-slate-800/50 pb-4">
-                <BookOpen className="text-indigo-500 mr-4" size={28} /> Background
-              </motion.h2>
-              
-              <div className="relative border-l border-slate-800 ml-4 space-y-12 pb-4">
+        {/* ── EXPERIENCE & EDUCATION ────────────────────── */}
+        <section id="experience" className="py-20 md:py-28 border-t border-slate-800/30 bg-slate-900/10">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+
+            {/* Education */}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
+              <motion.div variants={fadeInUp} className="flex items-center mb-10 pb-4 border-b border-slate-800/50">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center mr-3">
+                  <BookOpen className="text-indigo-400" size={20} />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">Education</h2>
+              </motion.div>
+
+              <div className="relative border-l border-slate-800 ml-4 space-y-10">
                 <motion.div variants={fadeInUp} className="relative pl-8">
-                  <span className="absolute w-3 h-3 rounded-full bg-indigo-500 left-[-6px] top-1.5 outline outline-[6px] outline-[#0a0a0b]"></span>
-                  <div className="text-xs font-mono text-indigo-400 mb-2 uppercase tracking-wider">2024 - Present</div>
-                  <h4 className="text-xl font-bold text-white">Diploma in Computer Science</h4>
-                  <div className="text-slate-400 text-sm mt-1 leading-relaxed">Universiti Malaysia Pahang Al-Sultan Abdullah (UMPSA)</div>
-                  <div className="mt-4 inline-block bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold px-3 py-1.5 rounded-lg text-xs uppercase tracking-widest">
-                    Current CGPA: 3.81
+                  <span className="absolute w-3.5 h-3.5 rounded-full bg-indigo-500 left-[-7px] top-1 ring-4 ring-[#080810]" />
+                  <div className="text-[10px] font-mono text-indigo-400 mb-2 uppercase tracking-wider">2024 – Present</div>
+                  <h4 className="text-lg font-bold text-white">Diploma in Computer Science</h4>
+                  <p className="text-slate-400 text-sm mt-1">Universiti Malaysia Pahang Al-Sultan Abdullah (UMPSA)</p>
+                  <div className="mt-3 inline-flex items-center space-x-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold px-3 py-1.5 rounded-lg text-xs">
+                    <Star size={11} className="fill-emerald-400" />
+                    <span>CGPA: 3.81 / Dean's List</span>
                   </div>
                 </motion.div>
-                
+
                 <motion.div variants={fadeInUp} className="relative pl-8">
-                  <span className="absolute w-3 h-3 rounded-full bg-slate-700 left-[-6px] top-1.5 outline outline-[6px] outline-[#0a0a0b]"></span>
-                  <div className="text-xs font-mono text-slate-500 mb-2 uppercase tracking-wider">2019 - 2023</div>
-                  <h4 className="text-xl font-bold text-slate-200">SPM (9As 1B+)</h4>
-                  <div className="text-slate-500 text-sm mt-1">SMK Jalan Mengkibol I</div>
+                  <span className="absolute w-3.5 h-3.5 rounded-full bg-slate-700 left-[-7px] top-1 ring-4 ring-[#080810]" />
+                  <div className="text-[10px] font-mono text-slate-500 mb-2 uppercase tracking-wider">2019 – 2023</div>
+                  <h4 className="text-lg font-bold text-slate-300">SPM — 9As 1B+</h4>
+                  <p className="text-slate-500 text-sm mt-1">SMK Jalan Mengkibol </p>
                 </motion.div>
               </div>
             </motion.div>
 
-            {/* Achievements Track */}
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-              <motion.h2 variants={fadeInUp} className="text-3xl font-bold text-white tracking-tight mb-10 flex items-center border-b border-slate-800/50 pb-4">
-                <Award className="text-indigo-500 mr-4" size={28} /> Highlights
-              </motion.h2>
-              
-              <div className="space-y-5">
-                {[
-                  { title: "Gold Award", event: "Youth Entrepreneurship Challenge (YEC), FIMEx 2025, UMPSA" },
-                  { title: "Dean's List", event: "Awarded for 3 consecutive semesters" },
-                  { title: "Team Leader", event: "Liaison Team, Chinese Debate Competition (2025)" },
-                  { title: "President", event: "1st Kluang Company Boys' Brigade (2023)" },
-                  { title: "Committee Member", event: "Judging Team, UMPSA × HUAWEI AppGallery Mobile App Competition" }
-                ].map((item, i) => (
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    variants={fadeInUp} 
-                    key={i} 
-                    className="flex p-6 rounded-3xl bg-slate-900/40 border border-slate-800 hover:bg-slate-900/80 hover:border-slate-700 transition-all group"
+            {/* Achievements */}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
+              <motion.div variants={fadeInUp} className="flex items-center mb-10 pb-4 border-b border-slate-800/50">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center mr-3">
+                  <Award className="text-amber-400" size={20} />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">Highlights</h2>
+              </motion.div>
+
+              <div className="space-y-3">
+                {achievements.map((item, i) => (
+                  <motion.div
+                    key={i}
+                    variants={fadeInUp}
+                    whileHover={{ x: 4 }}
+                    className="flex items-start p-4 md:p-5 rounded-xl bg-slate-900/40 border border-slate-800 hover:border-slate-600 hover:bg-slate-900/70 transition-all group cursor-default"
                   >
-                    <div className="text-indigo-500 mr-5 mt-1 group-hover:scale-110 transition-transform">
-                      <Award size={24} />
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center mr-4 flex-shrink-0 group-hover:bg-amber-500/20 transition-colors">
+                      <Award size={16} className="text-amber-400" />
                     </div>
                     <div>
-                      <h4 className="text-lg font-bold text-white tracking-tight">{item.title}</h4>
-                      <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">{item.event}</p>
+                      <h4 className="text-sm font-bold text-white">{item.title}</h4>
+                      <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{item.event}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
             </motion.div>
-
           </div>
         </section>
 
-        {/* CTA / CONTACT SECTION */}
-        <section id="contact" className="py-24 relative overflow-hidden">
-          <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-            <motion.div 
-              initial="hidden" 
-              whileInView="visible" 
-              viewport={{ once: true }} 
-              variants={staggerContainer}
+        {/* ── CONTACT ───────────────────────────────────── */}
+        <section id="contact" className="py-20 md:py-28 relative overflow-hidden border-t border-slate-800/30">
+          {/* Background */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-900/10 rounded-full blur-[100px]" />
+          </div>
+
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+            <motion.div
+              initial="hidden" whileInView="visible" viewport={{ once: true }}
+              variants={stagger}
+              className="text-center mb-14"
             >
-              <motion.h2 variants={fadeInUp} className="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-white">
-                Ready to build something <br className="hidden sm:block" />
-                <span className="text-indigo-500">impactful.</span>
+              <motion.p variants={fadeInUp} className="text-xs font-black uppercase tracking-[0.3em] text-indigo-500 mb-3">Get In Touch</motion.p>
+              <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tight mb-4">
+                Let's build something<br className="hidden sm:block" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500"> impactful.</span>
               </motion.h2>
-              <motion.p variants={fadeInUp} className="text-lg text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-                I am actively seeking a Full Stack Developer internship position starting <strong className="text-white">August 2026</strong>. Whether you have an opportunity or just want to connect, let's talk.
+              <motion.p variants={fadeInUp} className="text-slate-400 max-w-xl mx-auto text-base">
+                Seeking a Full Stack internship starting <strong className="text-white">17 August 2026 - 29 January 2027</strong>. The fastest way to reach me is by email.
               </motion.p>
-              
-              <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-24">
-                <motion.a 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  href="mailto:yixunkhew0328@gmail.com" 
-                  className="w-full sm:w-auto px-8 py-4 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 transition-all flex items-center justify-center space-x-2"
-                >
-                  <Mail size={18} />
-                  <span>yixunkhew0328@gmail.com</span>
-                </motion.a>
-                <motion.a 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  href="https://linkedin.com/in/Khew0328" 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-800 text-white border border-slate-700 font-semibold hover:bg-slate-700 transition-all flex items-center justify-center space-x-2"
-                >
-                  <Linkedin size={18} />
-                  <span>LinkedIn Profile</span>
-                </motion.a>
+            </motion.div>
+
+            <div className="max-w-3xl mx-auto w-full space-y-5">
+
+              {/* Contact info */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.6 }}
+                className="space-y-5"
+              >
+                {[
+                  { icon: Mail, label: 'Email', value: EMAIL_ADDRESS, href: EMAIL_COMPOSE_URL },
+                  { icon: Linkedin, label: 'LinkedIn', value: 'linkedin.com/in/Khew0328', href: 'https://linkedin.com/in/Khew0328' },
+                  { icon: Github, label: 'GitHub', value: 'github.com/yixun06?tab=repositories', href: 'https://github.com/yixun06?tab=repositories' },
+                  { icon: MapPin, label: 'Location', value: 'Kluang, Johor, Malaysia', href: null },
+                ].map(({ icon: Icon, label, value, href }) => (
+                  <a
+                    key={label}
+                    href={href ?? undefined}
+                    target={href && !href.startsWith('mailto') ? '_blank' : undefined}
+                    rel={href && !href.startsWith('mailto') ? 'noreferrer' : undefined}
+                    onClick={label === 'Email' ? openEmailClient : undefined}
+                    className={`flex items-center p-4 bg-slate-900/40 border border-slate-800 rounded-xl transition-all group ${href ? 'hover:border-indigo-500/40 hover:bg-slate-900/70 cursor-pointer' : 'cursor-default'}`}
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-indigo-500/15 flex items-center justify-center mr-4 flex-shrink-0 group-hover:bg-indigo-500/25 transition-colors">
+                      <Icon size={18} className="text-indigo-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">{label}</div>
+                      <span className={`text-sm truncate block ${href ? 'text-slate-300 group-hover:text-indigo-300' : 'text-slate-300'}`}>{value}</span>
+                    </div>
+                  </a>
+                ))}
+
+                <div className="p-5 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Coffee size={16} className="text-indigo-400" />
+                    <span className="text-sm font-bold text-white">Available for</span>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed">Internships · Freelance Projects · Open Source Collaboration</p>
+                </div>
               </motion.div>
 
-              <motion.footer variants={fadeInUp} className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em] w-full">
-                <div>&copy; {new Date().getFullYear()} KHEW YI XUN</div>
-                <div className="my-4 md:my-0 text-slate-600">DESIGNED FOR WEB & MOBILE</div>
-                <div className="flex items-center space-x-2">
-                  <MapPin size={12} />
-                  <span>KLUANG, MY</span>
-                </div>
-              </motion.footer>
-            </motion.div>
+              <motion.a
+                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.08 }}
+                href={EMAIL_COMPOSE_URL}
+                onClick={openEmailClient}
+                className="w-full inline-flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-500/20"
+              >
+                <Mail size={18} />
+                <span>Open Email</span>
+              </motion.a>
+            </div>
           </div>
         </section>
 
+        {/* ── FOOTER ────────────────────────────────────── */}
+        <footer className="py-8 border-t border-slate-800/50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-xs font-mono text-slate-600 uppercase tracking-widest">
+              © {new Date().getFullYear()} Khew Yi Xun
+            </div>
+            <div className="flex items-center space-x-1 text-xs font-mono text-slate-600">
+              <span>Designed & Built with Copilot </span>
+              
+            </div>
+            <div className="flex items-center space-x-1.5 text-xs font-mono text-slate-600">
+              <MapPin size={11} />
+              <span>KLUANG, MY</span>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   );

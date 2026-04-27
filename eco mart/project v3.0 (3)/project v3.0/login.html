@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - EcoMarket</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="setCurrentPage.js"></script>
+</head>
+<body onload="setCurrentPage('login')">
+  <header class="header">
+    <div class="logo"><img src="pic/project logo.png"></div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="main page.html">Home</a></li>
+        <li><a href="shop.html">Shop</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html" class="active">Login</a></li>
+        <li><a href="register.html">Register</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="form-container">
+    <h2>Login to Your Account</h2>
+    <form action="login.php" method="POST">
+      <input id="email" type="email" name="email" placeholder="Email" required />
+      <input id="password" type="password" name="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="register.html">Register here</a>.</p>
+  </section>
+
+</body>
+</html>

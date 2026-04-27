@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact - EcoMarket</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="setCurrentPage.js"></script>
+</head>
+<body onload="setCurrentPage('contact')">
+  <header class="header">
+    <div class="logo"><img src="pic/project logo.png"></div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="main page.html">Home</a></li>
+        <li><a href="shop.html">Shop</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html" class="active">Contact</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="register.html">Register</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="form-container">
+    <h2>Contact Us</h2>
+    <form>
+      <input type="text" placeholder="Your Name" required>
+      <input type="email" placeholder="Your Email" required>
+      <textarea rows="5" placeholder="Your Message" required></textarea>
+      <button type="submit" onclick="alert('We have receive your feedback! Thanks for supporting us')">Send Message</button>
+    </form>
+  </section>
+
+</body>
+</html>
