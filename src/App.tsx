@@ -277,7 +277,7 @@ export default function App() {
       desc: 'A powerful personal finance app built with Flutter & Firebase. Features real-time state management, expense tracking, and rich data visualizations designed for Android.',
       tech: ['Flutter', 'Dart', 'Firebase Firestore', 'Firebase Auth', 'Provider'],
       demoUrl: null,
-      githubUrl: null,
+      githubUrl: 'https://github.com/yixun06/SMART-POCKET',
       featured: true,
     },
     {
