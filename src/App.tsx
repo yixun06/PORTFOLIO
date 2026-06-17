@@ -138,12 +138,6 @@ function ProjectCard({ project, idx, featured }: { project: ProjectItem; idx: nu
             <div key={line} style={{ paddingLeft: `${i * 8}px` }}>{line}</div>
           ))}
         </div>
-        <div className="hidden">
-          {['import Flutter from "dart:flutter";', `const app = new ${project.title.replace(/\s/g, '')}();`, 'await app.build();', '// Production ready ✓'].map((line, i) => (
-            <div key={i} style={{ paddingLeft: `${i * 8}px` }}>{line}</div>
-          ))}
-        </div>
-
         {/* Category badge */}
         <div className="absolute top-4 left-4 flex items-center space-x-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-sm border border-slate-700/50 rounded-full">
           <span className="text-indigo-400">{categoryIcons[project.category] || <Code2 size={12} />}</span>
