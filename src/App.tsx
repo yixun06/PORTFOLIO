@@ -26,7 +26,7 @@ import {
 const BASE_URL = '/PORTFOLIO/';
 
 type MousePosition = { x: number; y: number };
-type ProjectCategory = 'Mobile App' | 'E-commerce Web' | 'Web Forms System' | 'Content Platform' | 'Full Stack Web';
+type ProjectCategory = 'Mobile App' | 'Native Android App' | 'E-commerce Web' | 'Web Forms System' | 'Content Platform' | 'Full Stack Web';
 type ProjectItem = {
   title: string;
   date: string;
@@ -34,8 +34,12 @@ type ProjectItem = {
   desc: string;
   tech: string[];
   demoUrl: string | null;
+  demoLabel?: string;
   githubUrl: string | null;
   featured: boolean;
+  myPart?: string[];
+  teamPart?: string[];
+  codeLines?: string[];
 };
 
 // ─── Floating Cursor Glow ───────────────────────────────────────────────────
@@ -88,11 +92,19 @@ function ProjectCard({ project, idx, featured }: { project: ProjectItem; idx: nu
 
   const categoryIcons: Record<ProjectCategory, React.ReactNode> = {
     'Mobile App': <Smartphone size={12} />,
+    'Native Android App': <Smartphone size={12} />,
     'E-commerce Web': <Globe size={12} />,
     'Web Forms System': <Terminal size={12} />,
     'Content Platform': <BookOpen size={12} />,
     'Full Stack Web': <Layers size={12} />,
   };
+  const codeLines = project.codeLines ?? [
+    `const project = "${project.title}";`,
+    'buildPortfolioCard(project);',
+    'deploy.showcase();',
+    '// Portfolio ready',
+  ];
+  const hasContributionDetails = Boolean(project.myPart?.length || project.teamPart?.length);
 
   return (
     <motion.div
@@ -122,6 +134,11 @@ function ProjectCard({ project, idx, featured }: { project: ProjectItem; idx: nu
 
         {/* Decorative code lines */}
         <div className="absolute inset-0 flex flex-col justify-center px-6 opacity-30 font-mono text-xs text-indigo-300 space-y-1 select-none">
+          {codeLines.map((line, i) => (
+            <div key={line} style={{ paddingLeft: `${i * 8}px` }}>{line}</div>
+          ))}
+        </div>
+        <div className="hidden">
           {['import Flutter from "dart:flutter";', `const app = new ${project.title.replace(/\s/g, '')}();`, 'await app.build();', '// Production ready ✓'].map((line, i) => (
             <div key={i} style={{ paddingLeft: `${i * 8}px` }}>{line}</div>
           ))}
@@ -157,6 +174,38 @@ function ProjectCard({ project, idx, featured }: { project: ProjectItem; idx: nu
           {project.desc}
         </p>
 
+        {hasContributionDetails && (
+          <div className="mb-5 space-y-4 border-y border-slate-800/60 py-4">
+            {project.myPart?.length ? (
+              <div>
+                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-emerald-400">My part</p>
+                <ul className="space-y-1.5 text-xs leading-relaxed text-slate-300">
+                  {project.myPart.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {project.teamPart?.length ? (
+              <div>
+                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Team part</p>
+                <ul className="space-y-1.5 text-xs leading-relaxed text-slate-400">
+                  {project.teamPart.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-600" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        )}
+
         {/* Tech stack */}
         <div className="flex flex-wrap gap-1.5 mb-5">
           {project.tech.map((t: string) => (
@@ -173,7 +222,7 @@ function ProjectCard({ project, idx, featured }: { project: ProjectItem; idx: nu
               <a href={project.demoUrl} target="_blank" rel="noreferrer"
                 className="inline-flex items-center space-x-2 text-sm font-bold text-white hover:text-indigo-400 transition-colors group/link">
                 <ExternalLink size={14} className="group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 transition-transform" />
-                <span>Live Demo</span>
+                <span>{project.demoLabel ?? 'Live Demo'}</span>
               </a>
             )}
             {project.githubUrl && (
@@ -281,6 +330,33 @@ export default function App() {
       featured: true,
     },
     {
+      title: 'Smart Water Filter Monitoring App',
+      date: '2026',
+      category: 'Native Android App',
+      desc: 'A native Android app for smart water filter fault reporting and maintenance tracking, using Firebase Auth and Cloud Firestore for role-based realtime workflows.',
+      tech: ['Java', 'Android Studio', 'Firebase Auth', 'Cloud Firestore', 'XML UI', 'GPS'],
+      demoUrl: 'https://drive.google.com/file/d/1qkDx-Vn3bos_3jsCySAN3oZ4OTNO7Upa/view?usp=drive_link',
+      demoLabel: 'Demo Video',
+      githubUrl: 'https://github.com/yixun06/Water-Filter-Monitoring-App',
+      featured: true,
+      myPart: [
+        'Fault Report: GPS capture, evidence image compression, realtime status/search filters, and role-based fault visibility.',
+        'Maintenance Calendar: marked scheduled dates, Firestore realtime events, operator updates, and community/operator/admin visibility.',
+        'Auth support: Firebase login/signup, role profile lookup, local session handling, and dashboard fault statistics.',
+      ],
+      teamPart: [
+        'Sharvindraa: Filter Maintenance Alert and User Profile.',
+        'Afrina: Usage Monitoring and Water Quality Monitoring.',
+        'Irdina: Community Notification and Administrator Dashboard.',
+      ],
+      codeLines: [
+        'FirebaseAuth.signInWithEmailAndPassword(email, password);',
+        'db.collection("fault_reports").addSnapshotListener(...);',
+        'calendar.render(maintenance_events);',
+        '// Android + Firebase workflow',
+      ],
+    },
+    {
       title: 'CarGo',
       date: 'Oct 2025 – Dec 2025',
       category: 'Full Stack Web',
@@ -326,7 +402,7 @@ export default function App() {
     {
       title: 'Mobile Development',
       icon: Smartphone,
-      skills: ['Flutter', 'Dart', 'Firebase Auth & Firestore', 'Cross-Platform UI', 'Provider / Riverpod'],
+      skills: ['Flutter', 'Dart', 'Native Android', 'Java', 'Firebase Auth & Firestore', 'Provider / Riverpod'],
       highlight: true,
       color: 'indigo',
     },
@@ -624,7 +700,7 @@ export default function App() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
               {[
-                { value: 5, suffix: '+', label: 'Projects Built' },
+                { value: 6, suffix: '+', label: 'Projects Built' },
                 { value: 381, suffix: '/400', label: 'CGPA Score', display: '3.81' },
                 { value: 3, suffix: '×', label: "Dean's List" },
                 { value: 1, suffix: ' Gold', label: 'FIMEx Award' },
