@@ -21,9 +21,13 @@ import {
   Terminal,
   Coffee
 } from 'lucide-react';
+import JourneyGallery from './components/JourneyGallery';
+import type { JourneyItem } from './components/JourneyLightbox';
+import SmartPocketSpotlight from './components/SmartPocketSpotlight';
 
 // Base URL for GitHub Pages subdirectory deployment
 const BASE_URL = '/PORTFOLIO/';
+const SMART_POCKET_LINKEDIN_POST = 'https://www.linkedin.com/posts/khew0328_smartpocket-finalyearproject-goldaward-ugcPost-7476619408979808256-0ckX/?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAFnHAgUBy77INWYhO4yuvL8ibbb8iJ5EXpM';
 
 type MousePosition = { x: number; y: number };
 type ProjectCategory = 'Mobile App' | 'Native Android App' | 'E-commerce Web' | 'Web Forms System' | 'Content Platform' | 'Full Stack Web';
@@ -314,16 +318,6 @@ export default function App() {
 
   const projects: ProjectItem[] = [
     {
-      title: 'Smart Pocket',
-      date: 'Mac 2025 – Present',
-      category: 'Mobile App',
-      desc: 'A powerful personal finance app built with Flutter & Firebase. Features real-time state management, expense tracking, and rich data visualizations designed for Android.',
-      tech: ['Flutter', 'Dart', 'Firebase Firestore', 'Firebase Auth', 'Provider'],
-      demoUrl: null,
-      githubUrl: 'https://github.com/yixun06/SMART-POCKET',
-      featured: true,
-    },
-    {
       title: 'Smart Water Filter Monitoring App',
       date: '2026',
       category: 'Native Android App',
@@ -392,6 +386,27 @@ export default function App() {
     },
   ];
 
+  const smartPocketJourney: JourneyItem[] = [
+    {
+      image: `${BASE_URL}awards/smart-pocket-award-portrait.png`,
+      date: 'June 2026',
+      stage: 'Award Ceremony',
+      title: 'A Proud Exhibition Finish',
+      description: 'Celebrating Smart Pocket with the Gold Award and Best of the Best Award at the Final Year Project Exhibition.',
+      alt: 'Khew Yi Xun holding the Smart Pocket Gold Award, Best of the Best certificates, and exhibition medal at the Faculty of Computing',
+      objectPosition: 'center 34%',
+    },
+    {
+      image: `${BASE_URL}awards/smart-pocket-awards-display.png`,
+      date: 'June 2026',
+      stage: 'Recognition',
+      title: 'Two Awards, One Meaningful Milestone',
+      description: 'The Gold Award and Best of the Best certificates, medal, and exhibition gift marking the conclusion of months of refinement.',
+      alt: 'Smart Pocket Gold Award and Best of the Best certificates displayed with an exhibition medal and congratulatory gift',
+      objectPosition: 'center 68%',
+    },
+  ];
+
   const skills = [
     {
       title: 'Mobile Development',
@@ -424,7 +439,9 @@ export default function App() {
   ];
 
   const achievements = [
-    { title: 'Gold Award', event: 'Youth Entrepreneurship Challenge (YEC), FIMEx 2025, UMPSA' },
+    { title: 'Best of the Best Award', event: 'Smart Pocket — Final Year Project Exhibition 2025/2026' },
+    { title: 'Gold Award', event: 'Smart Pocket — Final Year Project Exhibition 2025/2026' },
+    { title: 'Gold Award', event: 'EzPark Mobile Prototype — Youth Entrepreneurship Challenge (YEC), FIMEx 2025' },
     { title: "Dean's List", event: 'Awarded for 3 consecutive semesters' },
     { title: 'Team Leader', event: 'Liaison Team, Chinese Debate Competition (2025)' },
     { title: 'President', event: '1st Kluang Company Boys\' Brigade (2023)' },
@@ -690,6 +707,36 @@ export default function App() {
         </section>
 
         {/* ── STATS BAR ─────────────────────────────────── */}
+        <section aria-label="Smart Pocket award announcement" className="relative border-y border-amber-400/15 bg-amber-400/[0.035]">
+          <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-7">
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl border border-amber-400/25 bg-amber-400/10 text-amber-300 shadow-lg shadow-amber-950/20">
+                  <Award size={23} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400">Latest Achievement</p>
+                  <h2 className="mt-1 text-lg font-black leading-tight text-white sm:text-xl">SMART POCKET — Gold Award &amp; Best of the Best</h2>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-400 sm:text-sm">Final Year Project Exhibition · Session 2025/2026 Semester II</p>
+                </div>
+              </div>
+              <a
+                href={SMART_POCKET_LINKEDIN_POST}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-fit flex-none items-center gap-2 rounded-xl border border-amber-400/25 bg-amber-400/10 px-4 py-2.5 text-sm font-bold text-amber-200 transition hover:border-amber-300/40 hover:bg-amber-400/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+              >
+                View LinkedIn Post <ExternalLink size={14} />
+              </a>
+            </motion.div>
+          </div>
+        </section>
+
         <section className="py-10 border-y border-slate-800/50 bg-slate-900/20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
@@ -697,7 +744,7 @@ export default function App() {
                 { value: 6, suffix: '+', label: 'Projects Built' },
                 { value: 381, suffix: '/400', label: 'CGPA Score', display: '3.81' },
                 { value: 3, suffix: '×', label: "Dean's List" },
-                { value: 1, suffix: ' Gold', label: 'FIMEx Award' },
+                { value: 2, suffix: '', label: 'FYP Awards' },
               ].map(({ value, suffix, label, display }, i) => (
                 <div key={i} className="text-center">
                   <div className="text-2xl sm:text-3xl font-black text-white mb-1">
@@ -772,7 +819,10 @@ export default function App() {
               <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Featured Projects.</motion.h2>
             </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <SmartPocketSpotlight linkedInUrl={SMART_POCKET_LINKEDIN_POST} />
+            <JourneyGallery items={smartPocketJourney} />
+
+            <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-3">
               {projects.map((project, idx) => (
                 <ProjectCard key={idx} project={project} idx={idx} featured={project.featured} />
               ))}
